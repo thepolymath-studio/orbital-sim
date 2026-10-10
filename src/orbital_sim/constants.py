@@ -25,3 +25,22 @@ A_HERMES = 2.0e-3           # m / s^2
 # R_EARTH  : mean radius 6371.0 km (IUGG), as in research S14.
 MU_EARTH = 3.986004418e14   # m^3 / s^2
 R_EARTH = 6.371e6           # m
+
+# Earth-Moon system, for the 2026-10-wk2 post (Apollo 13).
+# MU_MOON    : GM_moon, 4902.800066 km^3/s^2 (JPL DE430).
+# R_MOON     : mean radius 1737.4 km (NASA NSSDC Moon fact sheet).
+# R_EARTH_EQ : equatorial radius 6378.137 km (WGS-84).
+# H_ENTRY    : Apollo entry interface, 400,000 ft altitude
+#              (Apollo 13 Mission Report, MSC-02680, table 4-III).
+MU_MOON = 4.902800066e12    # m^3 / s^2
+R_MOON = 1.7374e6           # m
+R_EARTH_EQ = 6.378137e6     # m
+
+# NASA units in the Apollo record ("miles" = nautical miles).
+FT = 0.3048                 # m, international foot (exact)
+NMI = 1852.0                # m, nautical mile (exact)
+H_ENTRY = 400_000 * FT      # m, 121.92 km
+
+# D_MOON : Earth-Moon mean distance 384,400 km (NASA NSSDC Moon
+#          fact sheet), used only as the "far point" of a fall home.
+D_MOON = 3.844e8            # m

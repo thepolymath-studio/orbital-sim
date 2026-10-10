@@ -5,10 +5,12 @@ from .dynamics import (circular_state, gravity, no_thrust,
                        prograde, rhs, specific_energy)
 from .hohmann import hohmann
 from .propagate import Arc, fly, fly_schedule, reach_radius, sample
+from .visviva import escape_speed, hyperbola_speed, vis_viva
 
 __all__ = [
     "A_HERMES", "AU", "DAY", "HOUR", "MU_SUN", "R_EARTH_ORBIT",
     "R_MARS_ORBIT", "circular_state", "gravity", "no_thrust",
     "prograde", "rhs", "specific_energy", "hohmann", "Arc", "fly",
-    "fly_schedule", "reach_radius", "sample",
+    "fly_schedule", "reach_radius", "sample", "escape_speed",
+    "hyperbola_speed", "vis_viva",
 ]
