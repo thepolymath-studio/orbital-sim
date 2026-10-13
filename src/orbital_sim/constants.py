@@ -44,3 +44,35 @@ H_ENTRY = 400_000 * FT      # m, 121.92 km
 # D_MOON : Earth-Moon mean distance 384,400 km (NASA NSSDC Moon
 #          fact sheet), used only as the "far point" of a fall home.
 D_MOON = 3.844e8            # m
+
+# Sun-Jupiter, for the 2026-10-wk3 restricted three-body post.
+# MU_JUPITER_SYS : GM of the Jupiter system (planet + moons),
+#                  126,712,764.1 km^3/s^2 (JPL DE440). It gives the
+#                  Sun/Jupiter mass ratio 1047.35 (IAU 2009 value:
+#                  1047.348644).
+# A_JUPITER      : semi-major axis 778.479e6 km (NASA NSSDC Jupiter
+#                  fact sheet), used as the circular separation.
+MU_JUPITER_SYS = 1.267127641e17  # m^3 / s^2
+A_JUPITER = 7.78479e11           # m
+
+# Gargantua and Miller's planet (Interstellar), 2026-10 wk3 posts.
+# G          : CODATA 2018 Newtonian constant, 6.67430e-11.
+# C_LIGHT    : speed of light, exact (SI).
+# G0         : standard gravity 9.80665 m/s^2, exact (3rd CGPM).
+# M_GARGANTUA_SUNS : 1e8 solar masses (Thorne, The Science of
+#              Interstellar, ch. 6: "at least 100 million times"
+#              the Sun's mass; he notes ~2e8 "might be more
+#              reasonable").
+# G_MILLER   : 130 % of Earth's gravity (film line; Luminet,
+#              arXiv:1503.08305: 9.81 x 1.30 = 12.75 m/s^2).
+# RHO_EARTH  : Earth's mean density 5,513 kg/m^3 (NASA NSSDC Earth
+#              fact sheet). No source gives Miller's density: it
+#              is an assumption, scanned in the tests.
+# R_MOON (above) and D_MOON give the stand-in's body sizes.
+G = 6.67430e-11                   # m^3 / (kg s^2)
+C_LIGHT = 299_792_458.0           # m / s
+G0 = 9.80665                      # m / s^2
+M_GARGANTUA_SUNS = 1.0e8
+MU_GARGANTUA = M_GARGANTUA_SUNS * MU_SUN   # m^3 / s^2
+G_MILLER = 1.30 * G0              # m / s^2
+RHO_EARTH = 5_513.0               # kg / m^3

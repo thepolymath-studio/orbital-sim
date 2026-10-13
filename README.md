@@ -29,6 +29,11 @@ and the equations of motion are written out by hand because they are what the po
 | `apollo13.py` | 2026-10-wk2: one-energy fits to tracking calls, the Moon pass, entry speed |
 | `apollo13_data.py` | Apollo 13 Flight Journal calls and Mission Report values, with sources |
 | `whatif.py` | 2026-10-wk2 Sim: alternate histories (other Moon passes, the PC+2 burn, a toy drift) |
+| `cr3bp.py` | 2026-10 wk3: planar restricted three-body problem in the rotating frame, U_eff, Jacobi constant, physical scales |
+| `lagrange.py` | 2026-10 wk3: L1–L5, linearisation, saddle/hilltop, growth rates, the Routh threshold |
+| `balance.py` | 2026-10 wk3: the hook scenes (L1 cloud, L4 ring) and the U_eff grid |
+| `miller.py` | 2026-10 wk3: Gargantua + Miller's planet: the Earth–Moon-proportioned stand-in and the real numbers (L1/L2 inside the planet, Kerr period) |
+| `waiting.py` | 2026-10 wk3 Sim: the waiting test (three ships per balance point) and the saddle cloud |
 
 ## 2026-10-wk1: The Martian, option 02 (continuous thrust)
 
@@ -210,3 +215,95 @@ Tests (`tests/test_alt_histories.py`, 23 tests, < 1 s):
 - integrated falls from 384,400 km at the same speed in different directions reach entry at the
   same speed (vis-viva: energy, not path);
 - the toy drift's numbers and linearity; determinism.
+
+## 2026-10 wk3: Interstellar, balance points and chaos (restricted three-body problem)
+
+Two heavy bodies circle their
+barycentre; a third body is too light to pull them back. In the frame that turns with the
+pair (normalised: separation 1, total mass 1, rate 1, μ = m₂/(m₁+m₂)):
+
+    ẍ − 2ẏ = ∂Ω/∂x,  ÿ + 2ẋ = ∂Ω/∂y,  Ω = ½(x²+y²) + (1−μ)/r₁ + μ/r₂,  U_eff = −Ω
+
+The ±2 terms are the Coriolis effect; the one conserved quantity is C_J = 2Ω − v².
+The balance points solve ∇U_eff = 0: L1–L3 by bracketing on the axis, L4/L5 in closed form.
+Stability comes from the eigenvalues of the linearised motion.
+
+**The pair.** Gargantua and Miller's planet, "treated as if it were Earth and Moon"
+(`miller.py`): a labelled stand-in with the Earth–Moon mass ratio (81.30) and body sizes.
+Numbers are quoted in the pair's own units: distance as a share of the planet's distance
+from Gargantua (a) or in planet radii (R = 0.00452 a), time in orbits of the planet.
+Absolute km and days would be Earth–Moon numbers, so they are not quoted for Gargantua.
+
+```bash
+python examples/2026-10-wk3_balance_points.py --check   # ~3 s
+```
+
+Results (stand-in): L1 0.849 a and L2 1.168 a from Gargantua (33.4 R and 37.1 R from the
+planet), L3 0.993 a on Gargantua's far side, L4/L5 at a from both, ±60°. L1–L3 are saddles
+of U_eff (drift e-folding 0.054, 0.074 and 0.895 orbits); L4/L5 are hilltops held by the
+Coriolis effect, because 81.30 > (25 + 3√69)/2 = 24.96 (Routh). Hook: ten craft at rest,
+a millionth of a apart around L1, split 5 to the planet's side and 5 to Gargantua's; a
+neighbouring pair is more than a tenth of a apart after 0.63 orbits. Six craft on L4's
+slow swing (amplitude 0.05 a) stay within 0.087 a for 27 orbits.
+
+**The real numbers** (`miller_real`, Thorne's 1e8 suns, 130 % of Earth's gravity, the
+planet at Gargantua's radius GM/c² = 0.987 AU; the planet's density is not sourced, Earth's
+5,513 kg/m³ assumed): μ = 6.6e-14 (mass ratio 1.5e13), and L1/L2 lie 0.50 planet radii from
+the centre, i.e. **inside the planet**. They would clear the surface only above 44,231 kg/m³
+(8× Earth's). Every balance point sits within 2.8e-5 a of the planet's own distance from
+Gargantua. Newton is only a stand-in there: his orbital speed at GM/c² is the speed of light,
+and his period (0.86 h) is half the Kerr period for a maximally spinning hole (1.72 h).
+
+Validation (same code, real systems): Earth–Moon L1 326,381 km, L2 448,915 km, L3 381,675 km
+from Earth's centre (sourced 326,400 / 448,900 / 381,700); Sun–Earth L2 1.508 million km,
+e-folding 23.0 / 23.4 d; Sun/Jupiter 1,047.35 with stable L4/L5.
+
+This writes `outputs/2026-10-wk3/`: `hook.npz` + `hook.json`, `landscape.npz` +
+`landscape.json` (U_eff on a 601 × 601 grid in units of a, the L-points and their contour
+levels) and `results.json`.
+
+Tests (`tests/test_cr3bp.py`, `test_lagrange.py`, `test_balance.py`, `test_miller.py`):
+
+- C_J conserved to 2e-10 on a path that crosses L1's neck four times in 608 days;
+- the rotating-frame integration equals an independent inertial-frame integration with the
+  primaries on circles (three μ values), and that comparison catches a flipped Coriolis sign;
+- ∇U_eff = 0 at all five points for six μ; L1–L3 equal the roots of Szebehely's quintics;
+  L4/L5 at (½ − μ, ±√3/2) with C_J = 3 − μ + μ²; the Hill limit (μ/3)^⅓;
+- the sourced Earth–Moon distances; published C_J at L1–L4; Sun–Earth L2 and its 23-day drift;
+- L1–L3 saddles, L4/L5 hilltops; Routh's μ by bisection to 1e-8;
+- real numbers: the ball model reproduces Earth's radius; L1/L2 gaps match the Hill estimate
+  (ρ/ρ_clear)^⅓ and reach the surface exactly at ρ_clear = 3 × Gargantua's mean density inside
+  a; Thorne's 1/M² tide scaling; with the real μ the growth rates hit the small-μ limits
+  √(1+2√7), √(21μ/8) and √(27μ/4); the Kerr period reduces to Kepler's at zero spin.
+
+## 2026-10 wk3 Sim post: Interstellar, where could Endurance wait near Miller's planet?
+
+While the Ranger visits Miller's planet, Endurance waits in orbit (Romilly's 23 years). Could
+it have waited at a balance point near the planet? Same stand-in and units as above, with the
+experiments in `waiting.py`.
+
+```bash
+python examples/2026-10-wk3_miller_waiting.py --check   # ~25 s
+```
+
+Waiting test (10 orbits; L4/L5 also 300 orbits): at each point one ship exactly on it, one a
+millionth of a off, one drifting at a millionth of the orbital speed. Off and drifting ships
+leave L1 (after 0.53 / 0.64 orbits, to 1 % of a), L2 (0.70 / 0.83) and L3 (5.75 / 6.38), and
+stay at L4/L5 (never farther than 1.6e-5 a in 300 orbits). Even the "exact" ships at L1/L2
+leave after about 2 orbits: the computer's rounding (1e-16) is enough on a saddle.
+
+L1 cloud: 100 ships at rest, all within a millionth of a, at L1. 50 go to the planet's side and
+stay near it, 50 fall back toward Gargantua; the side each takes is the sign of its start
+along the saddle's unstable direction. The cloud is 0.0065 a wide after half an orbit and
+1.7 a after one, widening by e every 0.054 orbits (L1's e-folding time).
+
+Real-numbers check: with Thorne's numbers L1/L2 are inside the planet, and all five points sit
+at the planet's distance from Gargantua.
+
+This writes `outputs/2026-10-wk3-sim/`: `miller.npz` + `miller.json` and `results.json`.
+
+Tests (`tests/test_waiting.py`): exact ships hold (L3–L5 10 orbits within 1e-9 a); the L1/L2 gap
+grows at the eigenvalue rate; only L1–L3 lose misplaced ships; L4/L5 hold them for 300 orbits;
+a ship planet-side of L1 is trapped by the Jacobi constant; the cloud leaves on the side its
+unstable component says (also at L2, orientation), widens at the L1 rate, conserves C_J, and
+its fates do not change at a 100× looser tolerance; determinism.
