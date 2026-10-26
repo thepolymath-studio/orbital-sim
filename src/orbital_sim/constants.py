@@ -76,3 +76,20 @@ M_GARGANTUA_SUNS = 1.0e8
 MU_GARGANTUA = M_GARGANTUA_SUNS * MU_SUN   # m^3 / s^2
 G_MILLER = 1.30 * G0              # m / s^2
 RHO_EARTH = 5_513.0               # kg / m^3
+
+# Earth's bulge and spin, for the 2026-10 wk4 posts (Gravity).
+# J2_EARTH : Earth's dominant zonal harmonic (oblateness),
+#            1.08262668e-3 (EGM96 / JGM-3 value, as quoted in
+#            Wikipedia "Nodal precession"; research S10). Used with
+#            R_EARTH_EQ (WGS-84) and MU_EARTH above.
+# F_EARTH  : WGS-84 flattening 1/298.257223563 (NGA TR8350.2):
+#            the equator is a*f = 21.4 km farther out than the
+#            poles.
+# OMEGA_EARTH : WGS-84 spin rate 7.292115e-5 rad/s (sidereal), for
+#            drawing the globe under the inertial frame.
+# YEAR_TROPICAL : 365.2422 d; a sun-synchronous plane turns 360
+#            degrees in one (0.9856 deg/day eastward).
+J2_EARTH = 1.08262668e-3
+F_EARTH = 1.0 / 298.257223563
+OMEGA_EARTH = 7.292115e-5         # rad / s
+YEAR_TROPICAL = 365.2422          # days

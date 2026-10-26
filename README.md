@@ -34,6 +34,12 @@ and the equations of motion are written out by hand because they are what the po
 | `balance.py` | 2026-10 wk3: the hook scenes (L1 cloud, L4 ring) and the U_eff grid |
 | `miller.py` | 2026-10 wk3: Gargantua + Miller's planet: the Earth–Moon-proportioned stand-in and the real numbers (L1/L2 inside the planet, Kerr period) |
 | `waiting.py` | 2026-10 wk3 Sim: the waiting test (three ships per balance point) and the saddle cloud |
+| `j2.py` | 2026-10 wk4: Earth's gravity with the J2 bulge term (3D, ECI), its potential and energy, the closed-form nodal precession, the sun-synchronous tilt |
+| `elements.py` | 2026-10 wk4: osculating elements from states (vectorised), the inverse, circular starts, orbit paths for drawing |
+| `breakup.py` | 2026-10 wk4: NASA Standard Breakup Model (collision): sizes, area-to-mass, kick speeds; keeps the pieces that stay up |
+| `cloud.py` | 2026-10 wk4: fly a whole cloud in one DOP853 run; returns to the start, spreads, fitted turning rates |
+| `kessler.py` | 2026-10 wk4: Kessler's N² as a pair count; closing speed 2v sin(θ/2) |
+| `debris.py` | 2026-10 wk4: the film's 600 km breakup (scenario, ring and shell measures, passes, tilt sensitivity) |
 
 ## 2026-10-wk1: The Martian, option 02 (continuous thrust)
 
@@ -307,3 +313,75 @@ grows at the eigenvalue rate; only L1–L3 lose misplaced ships; L4/L5 hold them
 a ship planet-side of L1 is trapped by the Jacobi constant; the cloud leaves on the side its
 unstable component says (also at L2, orientation), widens at the L1 rate, conserves C_J, and
 its fates do not change at a 100× looser tolerance; determinism.
+
+## 2026-10 wk4: Gravity, the cascade and what happens next
+
+One system for both posts: a satellite on a circular orbit 600 km up (the film's title card)
+breaks up. The NASA Standard Breakup Model (Johnson et al. 2001, collision branch, pieces
+from 11 cm to 1 m) draws each piece's size, area-to-mass ratio and kick: log10(Δv) is normal
+with mean 0.9 χ + 2.9 and width 0.4, in a random direction. Pieces whose new orbit dips below
+200 km fall back and are not followed: 90 of the 590 drawn, which leaves 500. The cloud flies
+under Earth's gravity plus J2 in an Earth-centred inertial frame (scipy DOP853, rtol 1e-11,
+every piece in one run):
+
+    r'' = -mu r / r^3 + a_J2,    dOmega/dt = -(3/2) n J2 (R_E/p)^2 cos i
+
+Assumptions: the tilt is 51.6° (the ISS's; the film does not say), the breakup is over the
+equator heading north, and there is no drag, Sun, Moon or collision between pieces.
+
+```bash
+python examples/2026-10-wk4_debris_cloud.py --check      # concept post, ~2.5 min
+```
+
+Results: at 600 km the period is 96.69 min and the speed 7.558 km/s (head-on closing speed
+15.1 km/s). The middle 90 % of the cloud spans a full lap (a ring) after 10.6 h. Without J2
+the ring takes 10.65 h, and period differences alone predict 10.64 h, so the ring comes from
+Kepler, not J2. J2 turns the orbit planes west at about 4.5° a day, at rates that spread by
+1.44° a day across the middle 90 % of the cloud. Their planes are spread half way round after
+125 days and all the way round (a shell) after 250 days. At other tilts (closed form,
+validated by the simulation) the shell takes 172 days at 28.5° and 838 days at 82.5°.
+Kessler's N²: 1,000 objects make 499,500 pairs and 2,000 make 1,999,000 (×4.002).
+
+This writes `outputs/2026-10-wk4/`: `cloud_loop.npz` + `cloud_loop.json` (the Slide-1 loop:
+two days at 2-min steps, then a year at daily steps, plus orbit rings at 7 snapshots) and
+`results.json`.
+
+## 2026-10 wk4 Sim post: Gravity, follow the film's cloud
+
+The same cloud. **Step 1:** does it come back every 90 minutes? The intact orbit is back at the
+breakup spot after 96.49 min (J2 makes this 11 s shorter than Kepler's 96.69 min). On pass 1
+the middle half of the pieces goes past in 3.1 min and the middle 90 % in 16.2 min, with 43 %
+arriving within a minute of the intact orbit. By pass 15 (about a day) those figures are
+46.5 min, 242.7 min and 4.8 %: a ring. The spot itself moves 37 km per orbit as J2 turns the
+plane. **Step 2:** the ring forms in 10.6 h (10.65 h without J2), then the planes fan out into a
+shell in 250 days. Over a year, each piece's simulated turning rate matches the closed form to
+within 0.18 % (median 0.08 %).
+
+```bash
+python examples/2026-10-wk4_follow_the_cloud.py --check   # ~2.5 min
+```
+
+This writes `outputs/2026-10-wk4-sim/`: `follow_cloud.npz` + `follow_cloud.json` (positions,
+per-pass arrival offsets, spread curves with and without J2, simulated vs closed-form rates per
+piece) and `results.json`.
+
+Tests (`test_j2.py`, `test_elements.py`, `test_breakup.py`, `test_debris.py`, `test_kessler.py`):
+
+- a_J2 = −∇Φ by finite differences; the bulge pulls inward over the equator by
+  (3/2) J2 (R/r)² of gravity and outward over the pole by twice that;
+- the closed form gives Wikipedia's worked example (800 km, 56°: −3.683°/day) and its
+  sun-synchronous tilt (a = 7,200 km: 98.7°); polar orbits do not turn, retrograde ones turn
+  east, and the rate scales as a^−3.5;
+- energy and polar angular momentum are conserved to 1e-9, while the plane turns. Without J2
+  the node is fixed and the orbit closes after Kepler's period (1 cm);
+- the simulated turning matches the closed form at four orbits (to 0.1 % at 51.6°, and within
+  the expected first-order gap of ≤ 0.4 % at 28.5°);
+- the breakup model's parameters match a literal transcription of ESA's piecewise formulas;
+  the sizes follow the −1.71 power law; the area-to-mass mixture and the kick law have the
+  published moments; kicks are isotropic;
+- the batch run equals one-piece runs at rtol 1e-12 to 50 m over 3 days. Without J2 every
+  piece returns to the exact breakup point after its own Kepler period; with J2 the return spot
+  drifts by r·|dΩ/dt|·t, and the arrival window grows in proportion to the pass number;
+- the ring time with J2 equals the time without it and the Kepler estimate (to 1 %);
+- 2N objects give 2(2N − 1)/(N − 1) times the pairs, which tends to 4;
+- determinism (seed 2013).
